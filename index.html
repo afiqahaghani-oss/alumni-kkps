@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SRDA KKPS | Sistem Rekod Data Alumni</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .bg-kkps-navy { background-color: #001f3f; }
+        .text-kkps-gold { color: #D4AF37; }
+        .border-kkps-gold { border-color: #D4AF37; }
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #D4AF37;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+
+    <nav class="bg-kkps-navy p-4 text-white flex justify-between items-center shadow-lg">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-kkps-navy font-bold">KK</div>
+            <h1 class="text-xl font-bold uppercase tracking-wider">Alumni KKPS</h1>
+        </div>
+        <ul class="flex space-x-6 text-sm">
+            <li><a href="#" class="hover:text-kkps-gold">Utama</a></li>
+            <li><a href="#" class="hover:text-kkps-gold">Direktori</a></li>
+            <li><a href="#" class="hover:text-kkps-gold">Log Masuk</a></li>
+        </ul>
+    </nav>
+
+    <section class="py-12 px-6 text-center bg-white border-b">
+        <h2 class="text-3xl font-extrabold text-kkps-navy mb-4">Cari Kejayaan Alumni Kami</h2>
+        <div class="max-w-2xl mx-auto relative">
+            <input type="text" placeholder="Cari nama atau kursus..." id="searchInput" class="w-full p-4 pl-12 rounded-full border-2 border-gray-200 focus:border-kkps-gold outline-none transition shadow-sm">
+            <svg class="w-6 h-6 absolute left-4 top-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        </div>
+    </section>
+
+<div class="flex flex-wrap justify-center gap-4 py-4 bg-gray-50 border-b">
+    <button onclick="filterByCategory('Semua')" class="px-6 py-2 rounded-full border border-kkps-navy text-kkps-navy hover:bg-kkps-navy hover:text-white transition font-medium active:scale-95">Semua</button>
+    <button onclick="filterByCategory('Elektrik')" class="px-6 py-2 rounded-full border border-kkps-navy text-kkps-navy hover:bg-kkps-navy hover:text-white transition font-medium active:scale-95">Elektrik</button>
+    <button onclick="filterByCategory('Kulinari')" class="px-6 py-2 rounded-full border border-kkps-navy text-kkps-navy hover:bg-kkps-navy hover:text-white transition font-medium active:scale-95">Kulinari</button>
+    <button onclick="filterByCategory('Multimedia')" class="px-6 py-2 rounded-full border border-kkps-navy text-kkps-navy hover:bg-kkps-navy hover:text-white transition font-medium active:scale-95">Multimedia</button>
+</div>
+
+    <main class="max-w-6xl mx-auto p-8">
+        <div id="alumniGrid" class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            </div>
+    </main>
+
+    <div id="videoModal" class="hidden fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
+        <div class="glass max-w-4xl w-full rounded-3xl overflow-hidden relative border-kkps-gold border-2 shadow-2xl">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-white hover:text-kkps-gold text-3xl font-bold z-20">&times;</button>
+            
+            <div class="flex flex-col md:flex-row">
+                <div class="md:w-2/3 bg-black aspect-video flex flex-col items-center justify-center text-white relative">
+                    <div id="loadingOverlay" class="absolute inset-0 bg-black flex flex-col items-center justify-center z-10">
+                        <div class="spinner mb-4"></div>
+                        <p class="text-sm tracking-widest animate-pulse">MENJANA VIDEO KEJAYAAN AI...</p>
+                    </div>
+                    <video id="alumniVideo" controls class="w-full h-full rounded-lg bg-black hidden"></video>
+                </div>
+
+                <div class="md:w-1/3 p-8 text-white">
+                    <h2 id="modalName" class="text-2xl font-bold text-kkps-gold mb-2">Nama Alumni</h2>
+                    <p id="modalCourse" class="text-sm opacity-80 mb-4">Nama Kursus</p>
+                    <hr class="opacity-20 mb-4">
+                    <p id="modalQuote" class="text-sm italic">"Pesanan kejayaan..."</p>
+                    <div class="mt-8">
+                        <span class="text-xs uppercase tracking-widest opacity-50">Status Semasa:</span>
+                        <p id="modalStatus" class="font-semibold">Bekerja</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. Data
+        const alumniData = [
+            {
+                id: 1,
+                name: "Ahmad Zulkifli",
+                course: "Sijil Teknologi Elektrik",
+                year: 2022,
+                job: "Wireman at TNB",
+                videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
+                photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300"
+            },
+            {
+                id: 2,
+                name: "Siti Aminah",
+                course: "Sijil Kulinari",
+                year: 2021,
+                job: "Sous Chef at Hotel Casuarina",
+                videoUrl: "https://www.w3schools.com/html/movie.mp4",
+                photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300"
+            },
+            {
+                id: 3,
+                name: "Mohd Ridzuan",
+                course: "Sijil Multimedia Kreatif",
+                year: 2023,
+                job: "Graphic Designer",
+                videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
+                photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300"
+            }
+        ];
+
+        // 2. Render Cards
+        function renderAlumni(data) {
+            const grid = document.getElementById('alumniGrid');
+            grid.innerHTML = ''; 
+
+            data.forEach(alumnus => {
+                grid.innerHTML += `
+                    <div class="bg-white rounded-xl shadow-md overflow-hidden border hover:border-kkps-gold transition">
+                        <div class="h-48 bg-cover bg-center" style="background-image: url('${alumnus.photo}')"></div>
+                        <div class="p-5">
+                            <h3 class="font-bold text-lg text-kkps-navy">${alumnus.name}</h3>
+                            <p class="text-gray-600 text-sm">${alumnus.course} (${alumnus.year})</p>
+                            <button onclick="openAIModal(${alumnus.id})" class="mt-4 w-full bg-kkps-navy text-white py-2 rounded-lg hover:bg-opacity-90">
+                                ▶ Tonton AI Video
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // 3. Search Bar Logic
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = alumniData.filter(alumnus => 
+                alumnus.name.toLowerCase().includes(term) || 
+                alumnus.course.toLowerCase().includes(term)
+            );
+            renderAlumni(filtered);
+        });
+
+        // 4. Modal Functions
+        function openAIModal(id) {
+            const alumnus = alumniData.find(a => a.id === id);
+            const modal = document.getElementById('videoModal');
+            const overlay = document.getElementById('loadingOverlay');
+            const video = document.getElementById('alumniVideo');
+
+            // Reset UI
+            overlay.classList.remove('hidden');
+            video.classList.add('hidden');
+            modal.classList.remove('hidden');
+
+            // Set Data
+            document.getElementById('modalName').innerText = alumnus.name;
+            document.getElementById('modalCourse').innerText = alumnus.course;
+            document.getElementById('modalQuote').innerText = `"${alumnus.job}. Skill dari KKPS sangat membantu!"`;
+            document.getElementById('modalStatus').innerText = "Bekerja";
+            video.src = alumnus.videoUrl;
+
+            // Fake "AI Thinking" delay
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+                video.classList.remove('hidden');
+                video.play();
+            }, 2000);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('videoModal');
+            const video = document.getElementById('alumniVideo');
+            video.pause();
+            modal.classList.add('hidden');
+        }
+
+        // Initial render
+        renderAlumni(alumniData);
+
+        // Function to filter by category buttons
+function filterByCategory(category) {
+    if (category === 'Semua') {
+        renderAlumni(alumniData);
+    } else {
+        const filtered = alumniData.filter(alumnus => 
+            alumnus.course.toLowerCase().includes(category.toLowerCase())
+        );
+        renderAlumni(filtered);
+    }
+    
+    // Optional: Clear search input when a button is clicked
+    document.getElementById('searchInput').value = '';
+}
+
+    </script>
+</body>
+</html>
