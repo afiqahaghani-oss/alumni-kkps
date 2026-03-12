@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Portal - Alumni KKPS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: { colors: { 'kkps-navy': '#002147' } }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-100 font-sans">
+
+    <nav class="bg-kkps-navy text-white p-4 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold">Admin Portal SRDA</h1>
+            <a href="index.html" class="hover:underline">Kembali ke Laman Utama</a>
+        </div>
+    </nav>
+
+    <main class="container mx-auto py-10 px-4">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <div class="bg-white p-6 rounded-xl shadow-lg h-fit">
+                <h2 class="text-2xl font-bold mb-6 text-kkps-navy border-b pb-2">Tambah Alumni</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Nama Penuh</label>
+                        <input type="text" id="newName" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-kkps-navy outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Kursus</label>
+                        <select id="newCourse" class="w-full p-2 border rounded-lg">
+                            <option value="Multimedia">Multimedia</option>
+                            <option value="Elektrik">Elektrik</option>
+                            <option value="Kulinari">Kulinari</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Pekerjaan / Status</label>
+                        <input type="text" id="newStatus" class="w-full p-2 border rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Video ID (YouTube)</label>
+                        <input type="text" id="newVideo" placeholder="e.g. dQw4w9WgXcQ" class="w-full p-2 border rounded-lg">
+                    </div>
+                    <button onclick="addAlumni()" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition">SIMPAN DATA</button>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg">
+                <h2 class="text-2xl font-bold mb-6 text-kkps-navy border-b pb-2">Urus Rekod Alumni</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-100">
+                                <th class="p-3 border">Nama</th>
+                                <th class="p-3 border">Kursus</th>
+                                <th class="p-3 border text-center">Tindakan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminTableBody">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // Data Utama (Sama dengan index.html)
+        let alumniData = JSON.parse(localStorage.getItem('customAlumni')) || [];
+
+        function renderAdminTable() {
+            const tableBody = document.getElementById('adminTableBody');
+            tableBody.innerHTML = alumniData.map((alumnus, index) => `
+                <tr class="hover:bg-gray-50">
+                    <td class="p-3 border font-medium">${alumnus.name}</td>
+                    <td class="p-3 border">${alumnus.course}</td>
+                    <td class="p-3 border text-center">
+                        <button onclick="deleteAlumni(${index})" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-700 transition text-sm">Hapus</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function addAlumni() {
+            const name = document.getElementById('newName').value;
+            const course = document.getElementById('newCourse').value;
+            const status = document.getElementById('newStatus').value;
+            const video = document.getElementById('newVideo').value;
+
+            if(!name || !status) return alert("Sila isi maklumat!");
+
+            const newAlumnus = { name, course, status, videoUrl: video };
+            alumniData.push(newAlumnus);
+            
+            localStorage.setItem('customAlumni', JSON.stringify(alumniData));
+            alert("Data Berjaya Ditambah!");
+            
+            // Clear inputs
+            document.getElementById('newName').value = '';
+            renderAdminTable();
+        }
+
+        function deleteAlumni(index) {
+            if(confirm("Adakah anda pasti mahu memadam data ini?")) {
+                alumniData.splice(index, 1);
+                localStorage.setItem('customAlumni', JSON.stringify(alumniData));
+                renderAdminTable();
+            }
+        }
+
+        // Jalankan Table bila page load
+        renderAdminTable();
+    </script>
+</body>
+</html>
