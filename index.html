@@ -97,6 +97,42 @@
 
     <script>
         // 1. Data
+// 1. YOUR BRIDGE URL (The one you copied from Google Apps Script)
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbydeQnEyqKjCevNXdGI5DwdKrHnR-SWMh_oCne7Puh7Jw9ugIaNeQCMWBJihCDsaIz2fA/exec"; 
+
+// 2. THIS FUNCTION GETS THE DATA FROM THE CLOUD
+function loadAlumniFromSheets() {
+    // Show your loading spinner (the one we added earlier)
+    document.getElementById('loader').style.display = 'flex';
+
+    fetch(SCRIPT_URL)
+        .then(response => response.json())
+        .then(rows => {
+            // 'rows' is the data from Google Sheets!
+            // We turn it into a format your website understands:
+            const alumniData = rows.map(row => ({
+                name: row[0],      // Column A in Sheet
+                course: row[1],    // Column B in Sheet
+                status: row[2],    // Column C in Sheet
+                videoUrl: row[3]   // Column D in Sheet
+            }));
+
+            // 3. SEND THE DATA TO YOUR RENDER FUNCTION
+            // Assuming your function to show cards is named 'renderAlumni'
+            renderAlumni(alumniData);
+
+            // Hide the loading spinner
+            hideLoader();
+        })
+        .catch(error => {
+            console.error("Oops! Database error:", error);
+            document.getElementById('loader').innerHTML = `<p class="text-red-600">Gagal memuat data. Sila refresh.</p>`;
+        });
+}
+
+// 4. RUN THIS AS SOON AS THE PAGE OPENS
+window.onload = loadAlumniFromSheets;
+
         const alumniData = [
             {
                 id: 1,

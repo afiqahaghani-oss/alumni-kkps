@@ -89,24 +89,55 @@
             `).join('');
         }
 
-        function addAlumni() {
-            const name = document.getElementById('newName').value;
-            const course = document.getElementById('newCourse').value;
-            const status = document.getElementById('newStatus').value;
-            const video = document.getElementById('newVideo').value;
+        const SCRIPT_URL = "PASTE_YOUR_WEB_APP_URL_HERE";
 
-            if(!name || !status) return alert("Sila isi maklumat!");
+function addAlumni() {
+    const btn = document.querySelector('button'); // The SIMPAN DATA button
+    const name = document.getElementById('newName').value;
+    const course = document.getElementById('newCourse').value;
+    const status = document.getElementById('newStatus').value;
+    const video = document.getElementById('newVideo').value;
 
-            const newAlumnus = { name, course, status, videoUrl: video };
-            alumniData.push(newAlumnus);
+    if(!name || !status) return alert("Sila isi maklumat!");
+
+    // Show loading state
+    btn.innerText = "SEDANG DISIMPAN...";
+    btn.disabled = true;
+
+    const newAlumnus = { name, course, status, videoUrl: video };
+
+    // Send to Google Sheets
+    fetch(SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors', // Essential for Google Scripts
+        body: JSON.stringify(newAlumnus)
+    }).then(() => {
+        alert("Data Berjaya Disimpan ke Google Sheets!");
+        location.reload(); 
+    }).catch(err => {
+        alert("Error: " + err);
+        btn.innerText = "SIMPAN DATA";
+        btn.disabled = false;
+    });
+}
+        //function addAlumni() {
+            //const name = document.getElementById('newName').value;
+            //const course = document.getElementById('newCourse').value;
+            //const status = document.getElementById('newStatus').value;
+            //const video = document.getElementById('newVideo').value;
+
+            //if(!name || !status) return alert("Sila isi maklumat!");
+
+           // const newAlumnus = { name, course, status, videoUrl: video };
+           // alumniData.push(newAlumnus);
             
-            localStorage.setItem('customAlumni', JSON.stringify(alumniData));
-            alert("Data Berjaya Ditambah!");
+            //localStorage.setItem('customAlumni', JSON.stringify(alumniData));
+            //alert("Data Berjaya Ditambah!");
             
             // Clear inputs
-            document.getElementById('newName').value = '';
-            renderAdminTable();
-        }
+            //document.getElementById('newName').value = '';
+           // renderAdminTable();
+       // }
 
         function deleteAlumni(index) {
             if(confirm("Adakah anda pasti mahu memadam data ini?")) {
