@@ -89,10 +89,10 @@
             `).join('');
         }
 
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbydeQnEyqKjCevNXdGI5DwdKrHnR-SWMh_oCne7Puh7Jw9ugIaNeQCMWBJihCDsaIz2fA/exec";
+       const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyyngj5pz3p-DW269KBDZVnm-rxREOjpSzYfblDhyEPC478pDJVfv7-ARvhLfo-5PuFzQ/exec";
 
 function addAlumni() {
-    const btn = document.querySelector('button'); // The SIMPAN DATA button
+    const btn = document.querySelector('button'); // Ambil butang SIMPAN DATA
     const name = document.getElementById('newName').value;
     const course = document.getElementById('newCourse').value;
     const status = document.getElementById('newStatus').value;
@@ -100,25 +100,41 @@ function addAlumni() {
 
     if(!name || !status) return alert("Sila isi maklumat!");
 
-    // Show loading state
+    // Tukar teks butang kepada loading state
     btn.innerText = "SEDANG DISIMPAN...";
     btn.disabled = true;
 
-    const newAlumnus = { name, course, status, videoUrl: video };
+    // Guna URLSearchParams supaya Google Script senang baca guna e.parameter (Lebih Stabil!)
+    const formData = new URLSearchParams();
+    formData.append('name', name);
+    formData.append('course', course);
+    formData.append('status', status);
+    formData.append('videoUrl', video);
 
-    // Send to Google Sheets
+    // Hantar data ke Google Sheets
     fetch(SCRIPT_URL, {
         method: 'POST',
-        mode: 'no-cors', // Essential for Google Scripts
-        body: JSON.stringify(newAlumnus)
+        mode: 'no-cors', // Wajib untuk Google Apps Script
+        body: formData
     }).then(() => {
         alert("Data Berjaya Disimpan ke Google Sheets!");
-        location.reload(); 
+        
+        // Kosongkan form input selepas berjaya simpan
+        document.getElementById('newName').value = '';
+        document.getElementById('newStatus').value = '';
+        document.getElementById('newVideo').value = '';
+        
+        // Reset semula butang
+        btn.innerText = "SIMPAN DATA";
+        btn.disabled = false;
+        
+        // Opsional: Boleh tambah fungsi fetch data semula di sini jika mahu table terus update
     }).catch(err => {
-        alert("Error: " + err);
+        alert("Ralat: " + err);
         btn.innerText = "SIMPAN DATA";
         btn.disabled = false;
     });
+}
 }
         //function addAlumni() {
             //const name = document.getElementById('newName').value;
