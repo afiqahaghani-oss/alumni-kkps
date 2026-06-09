@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urus Rekod Alumni - Tracer Study</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: { colors: { 'kkps-navy': '#002147' } } } }
+    </script>
+</head>
+<body class="bg-gray-100">
+
+    <nav class="bg-kkps-navy text-white p-4 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold">Pengurusan Rekod Alumni</h1>
+            <a href="tambah.html" class="bg-green-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-green-700 transition">+ Tambah Baru</a>
+        </div>
+    </nav>
+
+    <main class="container mx-auto py-10 px-4">
+        
+        <div id="editSection" class="hidden bg-yellow-50 p-6 rounded-xl border-2 border-yellow-200 shadow-lg mb-10">
+            <h2 class="text-xl font-bold mb-4 text-yellow-800">Kemaskini Maklumat: <span id="editingName"></span></h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 text-sm">
+                <input type="hidden" id="e_ic">
+                <div><label class="font-bold">Nama Penuh</label><input type="text" id="e_name" class="w-full p-2 border rounded"></div>
+                <div><label class="font-bold">Status Pekerjaan</label>
+                    <select id="e_statusKerja" class="w-full p-2 border rounded">
+                        <option value="Bekerja">Bekerja</option>
+                        <option value="Menyambung Pelajaran">Menyambung Pelajaran</option>
+                        <option value="Mencari Pekerjaan">Mencari Pekerjaan</option>
+                    </select>
+                </div>
+                <div><label class="font-bold">Syarikat / Agensi</label><input type="text" id="e_syarikat" class="w-full p-2 border rounded"></div>
+                </div>
+            <div class="flex gap-2">
+                <button onclick="updateData()" id="btnUpdate" class="bg-yellow-600 text-white px-6 py-2 rounded-lg font-bold">SIMPAN PERUBAHAN</button>
+                <button onclick="document.getElementById('editSection').classList.add('hidden')" class="bg-gray-400 text-white px-6 py-2 rounded-lg">BATAL</button>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow-lg">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-100 text-kkps-navy">
+                            <th class="p-3 border">No. KP</th>
+                            <th class="p-3 border">Nama Penuh</th>
+                            <th class="p-3 border">Program</th>
+                            <th class="p-3 border">Syarikat</th>
+                            <th class="p-3 border text-center">Tindakan</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminTableBody">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx5ss1rgJZYAHy7f4QcRCE_opSLpPg27yyJHMEXAzPW8cnBHipJpriRoL_apldNv9NrRg/exec";
+        let alumniData = [];
+
+        function loadData() {
+            const tbody = document.getElementById('adminTableBody');
+            tbody.innerHTML = `<tr><td colspan="5" class="p-10 text-center animate-pulse">Memuatkan senarai alumni...</td></tr>`;
+
+            fetch(SCRIPT_URL)
+                .then(res => res.json())
+                .then(data => {
+                    alumniData = data;
+                    renderTable();
+                });
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('adminTableBody');
+            tbody.innerHTML = alumniData.map((row, index) => `
+                <tr class="hover:bg-gray-50 border-b">
+                    <td class="p-3 text-sm text-gray-500">${row[0]}</td>
+                    <td class="p-3 font-bold">${row[1]}</td>
+                    <td class="p-3">${row[2]}</td>
+                    <td class="p-3">${row[10] || '-'}</td>
+                    <td class="p-3 text-center">
+                        <button onclick="sediaEdit(${index})" class="bg-yellow-100 text-yellow-700 px-4 py-1 rounded-full text-xs font-bold hover:bg-yellow-200">✏️ Edit</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function sediaEdit(idx) {
+            const d = alumniData[idx];
+            document.getElementById('editSection').classList.remove('hidden');
+            document.getElementById('editingName').innerText = d[1];
+            
+            // Isi form edit
+            document.getElementById('e_ic').value = d[0];
+            document.getElementById('e_name').value = d[1];
+            document.getElementById('e_statusKerja').value = d[5];
+            document.getElementById('e_syarikat').value = d[10];
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function updateData() {
+            const btn = document.getElementById('btnUpdate');
+            btn.innerText = "Mengemaskini...";
+            btn.disabled = true;
+
+            const formData = new URLSearchParams();
+            formData.append('action', 'kemaskini');
+            formData.append('icNumber', document.getElementById('e_ic').value);
+            formData.append('name', document.getElementById('e_name').value);
+            formData.append('statusKerja', document.getElementById('e_statusKerja').value);
+            formData.append('syarikat', document.getElementById('e_syarikat').value);
+            // Pastikan hantar data lain juga supaya tidak hilang di Google Sheet jika perlu
+
+            fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: formData })
+            .then(() => {
+                alert("Data Berjaya Dikemaskini!");
+                location.reload();
+            });
+        }
+
+        window.onload = loadData;
+    </script>
+</body>
+</html>
