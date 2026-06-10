@@ -82,7 +82,25 @@
                         const videoUrl = row[12] || "";
                         
                         // Gambar default jika alumni tak letak URL gambar
-                        const gambarUrl = row[13] || "https://ui-avatars.com/api/?name=" + encodeURIComponent(name) + "&background=002147&color=fff&size=200";
+                        // Ambil URL gambar dari pangkalan data
+let gambarUrlAsal = row[13] || "";
+let gambarUrl = "";
+
+if (gambarUrlAsal.includes("drive.google.com")) {
+    // Ekstrak ID Gambar dan tukar kepada format Thumbnail yang kebal sekatan
+    let idGambar = gambarUrlAsal.split("id=")[1];
+    if (idGambar) {
+        // sz=w500 bermaksud saiz lebar 500px, cukup jelas dan ringan
+        gambarUrl = "https://drive.google.com/thumbnail?id=" + idGambar + "&sz=w500";
+    } else {
+        gambarUrl = gambarUrlAsal;
+    }
+} else if (gambarUrlAsal !== "") {
+    gambarUrl = gambarUrlAsal;
+} else {
+    // Gambar lalai (default) jika alumni tiada gambar
+    gambarUrl = "https://ui-avatars.com/api/?name=" + encodeURIComponent(name) + "&background=002147&color=fff&size=200";
+}
 
                         // Logik paparan Pekerjaan: Hanya tunjuk jika status "Bekerja"
                         let maklumatKerjaHtml = '';
