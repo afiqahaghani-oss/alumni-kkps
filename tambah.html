@@ -5,11 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tambah Alumni - Tracer Study</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = { theme: { extend: { colors: { 'kkps-navy': '#002147' } } } }
-    </script>
+    <script>tailwind.config = { theme: { extend: { colors: { 'kkps-navy': '#002147' } } } }</script>
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-100 font-sans">
 
     <nav class="bg-kkps-navy text-white p-4 shadow-md mb-8">
         <div class="container mx-auto flex justify-between items-center">
@@ -42,8 +40,12 @@
                 <div><label class="block text-sm font-medium text-gray-700">Jawatan</label><input type="text" id="i_jawatan" class="w-full p-2 border rounded-lg"></div>
                 <div><label class="block text-sm font-medium text-gray-700">Syarikat / Agensi</label><input type="text" id="i_syarikat" class="w-full p-2 border rounded-lg"></div>
                 <div><label class="block text-sm font-medium text-gray-700">Tempoh Menunggu Pekerjaan</label><input type="text" id="i_tempoh" class="w-full p-2 border rounded-lg"></div>
-                <div><label class="block text-sm font-medium text-gray-700">URL Video (ID Youtube)</label><input type="text" id="i_video" placeholder="e.g. dQw4w9WgXcQ" class="w-full p-2 border rounded-lg"></div>
-                <div><label class="block text-sm font-medium text-gray-700">URL Gambar Profil</label><input type="text" id="i_gambar" placeholder="Link gambar..." class="w-full p-2 border rounded-lg"></div>
+                <div><label class="block text-sm font-medium text-gray-700">URL Video (ID Youtube)</label><input type="text" id="i_video" class="w-full p-2 border rounded-lg"></div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Muat Naik Gambar Profil</label>
+                    <input type="file" id="i_gambar" accept="image/*" class="w-full p-1.5 border rounded-lg text-sm file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-gray-200 file:text-gray-700 hover:file:bg-gray-300">
+                </div>
             </div>
 
             <button id="btnSimpan" onclick="addAlumni()" class="w-full bg-green-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-green-700 transition">SIMPAN REKOD BARU</button>
@@ -51,15 +53,35 @@
     </main>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx5ss1rgJZYAHy7f4QcRCE_opSLpPg27yyJHMEXAzPW8cnBHipJpriRoL_apldNv9NrRg/exec";
+        const SCRIPT_URL = "TAMPAL_URL_WEB_APP_AWAK_DI_SINI";
 
-        function addAlumni() {
+        // Fungsi Tukar Gambar Ke Base64
+        function penukarBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        // Gunakan async function
+        async function addAlumni() {
             const btn = document.getElementById('btnSimpan'); 
+            const icVal = document.getElementById('i_ic').value.trim();
+            const nameVal = document.getElementById('i_name').value.trim();
+
+            if(!icVal || !nameVal) {
+                return alert("Sila isi No KP dan Nama!");
+            }
+
+            btn.innerText = "SEDANG DIPROSES & UPLOAD GAMBAR...";
+            btn.disabled = true;
+
             const formData = new URLSearchParams();
-            
             formData.append('action', 'tambah');
-            formData.append('icNumber', document.getElementById('i_ic').value);
-            formData.append('name', document.getElementById('i_name').value);
+            formData.append('icNumber', icVal);
+            formData.append('name', nameVal);
             formData.append('program', document.getElementById('i_program').value);
             formData.append('tahunKonvo', document.getElementById('i_tahun').value);
             formData.append('noTel', document.getElementById('i_notel').value);
@@ -71,18 +93,23 @@
             formData.append('syarikat', document.getElementById('i_syarikat').value);
             formData.append('tempohMenunggu', document.getElementById('i_tempoh').value);
             formData.append('videoUrl', document.getElementById('i_video').value);
-            formData.append('gambarUrl', document.getElementById('i_gambar').value);
 
-            if(!document.getElementById('i_ic').value || !document.getElementById('i_name').value) {
-                return alert("Sila isi No KP dan Nama!");
+            // Semak dan baca fail gambar
+            const fileInput = document.getElementById('i_gambar');
+            if (fileInput.files.length > 0) {
+                try {
+                    const kodBase64 = await penukarBase64(fileInput.files[0]);
+                    formData.append('imageFile', kodBase64);
+                    formData.append('imageName', icVal + "_profil"); // Nama fail auto ikut IC
+                } catch(e) {
+                    alert("Ralat gambar: " + e);
+                    btn.disabled = false; return;
+                }
             }
-
-            btn.innerText = "SEDANG DISIMPAN...";
-            btn.disabled = true;
 
             fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: formData })
             .then(() => {
-                alert("Data Berjaya Disimpan ke Google Sheets!");
+                alert("Data dan Gambar Berjaya Disimpan!");
                 location.reload(); 
             }).catch(err => {
                 alert("Ralat: " + err);

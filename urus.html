@@ -5,25 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Urus Rekod Alumni - Tracer Study</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = { theme: { extend: { colors: { 'kkps-navy': '#002147' } } } }
-    </script>
+    <script>tailwind.config = { theme: { extend: { colors: { 'kkps-navy': '#002147' } } } }</script>
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-100 font-sans">
 
-    <nav class="bg-kkps-navy text-white p-4 shadow-md">
+    <nav class="bg-kkps-navy text-white p-4 shadow-md mb-8">
         <div class="container mx-auto flex justify-between items-center">
             <h1 class="text-xl font-bold">Pengurusan Rekod Alumni</h1>
             <a href="tambah.html" class="bg-green-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-green-700 transition">+ Tambah Baru</a>
         </div>
     </nav>
 
-    <main class="container mx-auto py-10 px-4">
+    <main class="container mx-auto px-4 pb-20">
         
-        <div id="editSection" class="hidden bg-yellow-50 p-6 rounded-xl border-2 border-yellow-200 shadow-lg mb-10">
+        <div id="editSection" class="hidden bg-yellow-50 p-6 rounded-xl border-2 border-yellow-200 shadow-lg mb-8">
             <h2 class="text-xl font-bold mb-4 text-yellow-800">Kemaskini Maklumat: <span id="editingName"></span></h2>
+            
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 text-sm">
                 <input type="hidden" id="e_ic">
+                <input type="hidden" id="e_program">
+                <input type="hidden" id="e_tahun">
+                <input type="hidden" id="e_notel">
+                <input type="hidden" id="e_tarafKerja">
+                <input type="hidden" id="e_sektorKerja">
+                <input type="hidden" id="e_pendapatan">
+                <input type="hidden" id="e_jawatan">
+                <input type="hidden" id="e_tempoh">
+                <input type="hidden" id="e_video">
+                
                 <div><label class="font-bold">Nama Penuh</label><input type="text" id="e_name" class="w-full p-2 border rounded"></div>
                 <div><label class="font-bold">Status Pekerjaan</label>
                     <select id="e_statusKerja" class="w-full p-2 border rounded">
@@ -33,10 +42,17 @@
                     </select>
                 </div>
                 <div><label class="font-bold">Syarikat / Agensi</label><input type="text" id="e_syarikat" class="w-full p-2 border rounded"></div>
+                
+                <div class="md:col-span-3">
+                    <label class="font-bold">Tukar Gambar Profil Baru</label>
+                    <input type="file" id="e_gambar" accept="image/*" class="w-full p-1.5 border rounded bg-white text-sm">
+                    <p class="text-xs text-yellow-700 mt-1">💡 Biarkan kosong jika tidak mahu menukar gambar asal.</p>
                 </div>
+            </div>
+            
             <div class="flex gap-2">
-                <button onclick="updateData()" id="btnUpdate" class="bg-yellow-600 text-white px-6 py-2 rounded-lg font-bold">SIMPAN PERUBAHAN</button>
-                <button onclick="document.getElementById('editSection').classList.add('hidden')" class="bg-gray-400 text-white px-6 py-2 rounded-lg">BATAL</button>
+                <button onclick="updateData()" id="btnUpdate" class="bg-yellow-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-yellow-700">SIMPAN PERUBAHAN</button>
+                <button onclick="document.getElementById('editSection').classList.add('hidden')" class="bg-gray-400 text-white px-6 py-2 rounded-lg hover:bg-gray-500">BATAL</button>
             </div>
         </div>
 
@@ -52,27 +68,24 @@
                             <th class="p-3 border text-center">Tindakan</th>
                         </tr>
                     </thead>
-                    <tbody id="adminTableBody">
-                        </tbody>
+                    <tbody id="adminTableBody"></tbody>
                 </table>
             </div>
         </div>
     </main>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx5ss1rgJZYAHy7f4QcRCE_opSLpPg27yyJHMEXAzPW8cnBHipJpriRoL_apldNv9NrRg/exec";
+        const SCRIPT_URL = "TAMPAL_URL_WEB_APP_AWAK_DI_SINI";
         let alumniData = [];
+        let gambarSediaAda = "";
 
         function loadData() {
             const tbody = document.getElementById('adminTableBody');
-            tbody.innerHTML = `<tr><td colspan="5" class="p-10 text-center animate-pulse">Memuatkan senarai alumni...</td></tr>`;
-
-            fetch(SCRIPT_URL)
-                .then(res => res.json())
-                .then(data => {
-                    alumniData = data;
-                    renderTable();
-                });
+            tbody.innerHTML = `<tr><td colspan="5" class="p-10 text-center animate-pulse">Memuatkan senarai...</td></tr>`;
+            fetch(SCRIPT_URL).then(res => res.json()).then(data => {
+                alumniData = data;
+                renderTable();
+            });
         }
 
         function renderTable() {
@@ -95,31 +108,80 @@
             document.getElementById('editSection').classList.remove('hidden');
             document.getElementById('editingName').innerText = d[1];
             
-            // Isi form edit
+            // Isi form visible
             document.getElementById('e_ic').value = d[0];
             document.getElementById('e_name').value = d[1];
             document.getElementById('e_statusKerja').value = d[5];
             document.getElementById('e_syarikat').value = d[10];
 
+            // Isi form hidden (supaya tak hilang bila update)
+            document.getElementById('e_program').value = d[2];
+            document.getElementById('e_tahun').value = d[3];
+            document.getElementById('e_notel').value = d[4];
+            document.getElementById('e_tarafKerja').value = d[6];
+            document.getElementById('e_sektorKerja').value = d[7];
+            document.getElementById('e_pendapatan').value = d[8];
+            document.getElementById('e_jawatan').value = d[9];
+            document.getElementById('e_tempoh').value = d[11];
+            document.getElementById('e_video').value = d[12];
+            
+            // Simpan gambar asal dalam memori
+            gambarSediaAda = d[13]; 
+            document.getElementById('e_gambar').value = ""; // Kosongkan input file
+
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function updateData() {
+        function penukarBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        async function updateData() {
             const btn = document.getElementById('btnUpdate');
-            btn.innerText = "Mengemaskini...";
+            btn.innerText = "SEDANG MENGEMASKINI...";
             btn.disabled = true;
 
+            const icVal = document.getElementById('e_ic').value;
             const formData = new URLSearchParams();
             formData.append('action', 'kemaskini');
-            formData.append('icNumber', document.getElementById('e_ic').value);
+            formData.append('icNumber', icVal);
             formData.append('name', document.getElementById('e_name').value);
+            formData.append('program', document.getElementById('e_program').value);
+            formData.append('tahunKonvo', document.getElementById('e_tahun').value);
+            formData.append('noTel', document.getElementById('e_notel').value);
             formData.append('statusKerja', document.getElementById('e_statusKerja').value);
+            formData.append('tarafKerja', document.getElementById('e_tarafKerja').value);
+            formData.append('sektorKerja', document.getElementById('e_sektorKerja').value);
+            formData.append('pendapatan', document.getElementById('e_pendapatan').value);
+            formData.append('jawatan', document.getElementById('e_jawatan').value);
             formData.append('syarikat', document.getElementById('e_syarikat').value);
-            // Pastikan hantar data lain juga supaya tidak hilang di Google Sheet jika perlu
+            formData.append('tempohMenunggu', document.getElementById('e_tempoh').value);
+            formData.append('videoUrl', document.getElementById('e_video').value);
+            
+            // Masukkan gambar sedia ada secara lalai
+            formData.append('gambarUrl', gambarSediaAda);
+
+            // Jika ada muat naik gambar baru
+            const fileInput = document.getElementById('e_gambar');
+            if (fileInput.files.length > 0) {
+                try {
+                    const kodBase64 = await penukarBase64(fileInput.files[0]);
+                    formData.append('imageFile', kodBase64);
+                    formData.append('imageName', icVal + "_profil_baru");
+                } catch(e) {
+                    alert("Ralat gambar: " + e);
+                    btn.disabled = false; btn.innerText = "SIMPAN PERUBAHAN"; return;
+                }
+            }
 
             fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: formData })
             .then(() => {
-                alert("Data Berjaya Dikemaskini!");
+                alert("Maklumat Berjaya Dikemaskini!");
                 location.reload();
             });
         }
